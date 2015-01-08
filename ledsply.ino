@@ -6,6 +6,7 @@
 #include "Clock4.h"
 #include "Tetris.h"
 #include "Rainbow.h"
+#include "Matrix.h"
 
 /*************************/
 /* Defines               */
@@ -24,6 +25,7 @@
 typedef enum EMode
 {
   modeRainbow = 0,
+  modeMatrix,
   modeTetris,
   modeNumberOfModes
 } EMode;
@@ -36,5 +38,8 @@ PS2X    ps2x;
 Clock4  clock;
 Tetris  tetris;
 Rainbow rainbow;
+Matrix  matrix;
 uint8_t mode;
 uint8_t bright;
+uint16_t seed;
+uint8_t percent;

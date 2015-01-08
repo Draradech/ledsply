@@ -1,6 +1,6 @@
 void setup()
 {
-  bright = 128;
+  bright = 255;
   
   clock.rate(REFRESHRATE);
   
@@ -9,7 +9,9 @@ void setup()
 
   ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT);
   
-  tetris.init(LEDS_X, LEDS_Y, REFRESHRATE);
+  tetris.init(LEDS_X, LEDS_Y);
 
-  rainbow.init(LEDS_X, LEDS_Y, REFRESHRATE);
+  rainbow.init(LEDS_X, LEDS_Y);
+  
+  matrix.init(LEDS_X, LEDS_Y);
 }
