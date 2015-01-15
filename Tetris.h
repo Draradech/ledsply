@@ -23,6 +23,7 @@ typedef enum
   eSlide,
   eDrop,
   eStart,
+  eMode,
   eNumOfInputTypes
 } EInputType;
 
@@ -30,7 +31,7 @@ class Tetris
 {
   public:
     void init(uint8_t width, uint8_t height);
-    void updateInput(boolean left, boolean right, boolean rotateLeft, boolean rotateRight, boolean slide, boolean drop, boolean start);
+    void updateInput(boolean left, boolean right, boolean rotateLeft, boolean rotateRight, boolean slide, boolean drop, boolean start, boolean mode);
     void step(uint16_t seed);
     void render(CRGB* leds);
     boolean gameRunning(void);
@@ -53,7 +54,10 @@ class Tetris
     uint8_t*     m_pPieces;
     uint8_t      m_pieceIndex;
     uint32_t     m_points;
-    uint32_t     m_pointsHigh;
+    uint32_t     m_points0;
+    uint32_t     m_points1;
+    uint32_t     m_pointsHigh0;
+    uint32_t     m_pointsHigh1;
     uint8_t      m_lines;
     boolean      m_gameRunning;
     
@@ -67,6 +71,8 @@ class Tetris
     int16_t      m_scrollOffset;
     uint8_t      m_scrollDelay;
     int8_t       m_textLen;
+    
+    uint8_t      m_mode;
     
     char         m_text[32];
 };

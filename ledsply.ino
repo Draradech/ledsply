@@ -40,6 +40,7 @@ Tetris  tetris;
 Rainbow rainbow;
 Matrix  matrix;
 uint8_t mode;
-uint8_t bright;
+uint8_t brightIndex;
 uint16_t seed;
 uint8_t percent;
+uint8_t brightnessPressed;

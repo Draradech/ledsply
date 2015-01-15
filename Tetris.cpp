@@ -18,7 +18,8 @@ void Tetris::init(uint8_t width, uint8_t height)
   m_pPieces = new uint8_t[7];
 
   m_pColors    = new CRGB[8];
-  m_pColors[0] = CRGB(  0,   0,   0);
+//  m_pColors[0] = CRGB(  0,   0,   0);
+  m_pColors[0] = CRGB(  32,   32,   32);
   m_pColors[1] = CRGB(  0, 255, 255);
   m_pColors[2] = CRGB(127,   0, 255);
   m_pColors[3] = CRGB(255, 127,   0);
@@ -33,18 +34,19 @@ void Tetris::init(uint8_t width, uint8_t height)
   m_firstdelay = 8;
   m_delay = 2;
   
-  m_pointsHigh = eeprom_read_dword(0);
+  m_pointsHigh0 = eeprom_read_dword(0);
+  m_pointsHigh1 = eeprom_read_dword((uint32_t*)4);
   
-  sprintf(m_text, "High:%ld", m_pointsHigh);
+  sprintf(m_text, "High:%ld", m_mode ? m_pointsHigh1 : m_pointsHigh0);
   m_textLen = strlen(m_text);
   m_scrollOffset = -m_width;
 }
 
-void Tetris::updateInput(boolean left, boolean right, boolean rotateLeft, boolean rotateRight, boolean slide, boolean drop, boolean start)
+void Tetris::updateInput(boolean left, boolean right, boolean rotateLeft, boolean rotateRight, boolean slide, boolean drop, boolean start, boolean mode)
 {
   for(EInputType type = (EInputType) 0; type < eNumOfInputTypes; type = (EInputType)(type + 1))
   {
-    boolean key = type == eLeft ? left : type == eRight ? right : type == eRotateLeft ? rotateLeft : type == eRotateRight ? rotateRight : type == eSlide ? slide : type == eDrop ? drop : start;
+    boolean key = type == eLeft ? left : type == eRight ? right : type == eRotateLeft ? rotateLeft : type == eRotateRight ? rotateRight : type == eSlide ? slide : type == eDrop ? drop : type == eStart ? start : mode;
     if(key)
     {
       if(!m_pInputState[type].trigger)
@@ -88,24 +90,31 @@ void Tetris::step(uint16_t seed)
     if(m_pInputState[eStart].trigger)
     {
       newGame(seed);
+      m_pInputState[eStart].trigger = false;
+    }
+    else
+    if(m_pInputState[eMode].trigger)
+    {
+      m_mode = !m_mode;
+      m_pInputState[eMode].trigger = false;
+      sprintf(m_text, "Last:%ld High:%ld", m_mode ? m_points1 : m_points0, m_mode ? m_pointsHigh1 : m_pointsHigh0);
+      m_textLen = strlen(m_text);
+    }
+
+    if(m_scrollDelay)
+    {
+      m_scrollDelay--;
     }
     else
     {
-      if(m_scrollDelay)
-      {
-        m_scrollDelay--;
-      }
-      else
-      {
-        m_scrollOffset++;
-        m_scrollDelay = 4;
-      }
-      if(m_scrollOffset > 6 * m_textLen)
-      {
-        m_scrollOffset = -m_width;
-      }
-      return;
+      m_scrollOffset++;
+      m_scrollDelay = 4;
     }
+    if(m_scrollOffset > 6 * m_textLen)
+    {
+      m_scrollOffset = -m_width;
+    }
+    return;
   }
   
   if(m_pieceState.dropdelay)  m_pieceState.dropdelay--;
@@ -264,9 +273,16 @@ void Tetris::shuffle()
 {
     for(uint8_t i = 0; i < 7; i++)
     {
-      uint8_t j = random8(i+1);
-      m_pPieces[i] = m_pPieces[j];
-      m_pPieces[j] = i + 1;
+      if(m_mode)
+      {
+        m_pPieces[i] = random8(1, 8);
+      }
+      else
+      {
+        uint8_t j = random8(i+1);
+        m_pPieces[i] = m_pPieces[j];
+        m_pPieces[j] = i + 1;
+      }
     }
     m_pieceIndex = 0;
 }
@@ -288,14 +304,26 @@ void Tetris::newGame(uint16_t seed)
 void Tetris::endGame(void)
 {
   m_gameRunning = false;
-  
-  if(m_points > m_pointsHigh)
+  if(m_mode)
   {
-      m_pointsHigh = m_points;
-      eeprom_write_dword(0, m_pointsHigh);
+    if(m_points > m_pointsHigh1)
+    {
+        m_pointsHigh1 = m_points;
+        eeprom_write_dword((uint32_t*)4, m_pointsHigh1);
+    }
+    m_points1 = m_points;
+  }
+  else
+  {
+    if(m_points > m_pointsHigh0)
+    {
+        m_pointsHigh0 = m_points;
+        eeprom_write_dword(0, m_pointsHigh0);
+    }
+    m_points0 = m_points;
   }
 
-  sprintf(m_text, "Last:%ld High:%ld", m_points, m_pointsHigh);
+  sprintf(m_text, "Last:%ld High:%ld", m_points, m_mode? m_pointsHigh1 : m_pointsHigh0);
   m_textLen = strlen(m_text);
   m_scrollOffset = -m_width;
 }
@@ -368,6 +396,18 @@ void Tetris::render(CRGB* leds)
               leds[index] = CRGB::White;
             }
           }
+        }
+      }
+    }
+    for(uint8_t x = 0; x < 5; ++x)
+    {
+      uint8_t col = pgm_read_byte(&(font[(m_mode ? 'R' : 'P') - 32][x]));
+      for(uint8_t y = 0; y < 8; ++y)
+      {
+        if(col & (1 << y))
+        {
+          uint16_t index = (m_height - y - 12) * m_width + x + 2;
+          leds[index] = CRGB::White;
         }
       }
     }

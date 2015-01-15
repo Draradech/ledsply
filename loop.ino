@@ -1,3 +1,5 @@
+uint8_t bright[] = {2,3,4,6,9,14,21,31,47,72,109,167,255};
+
 void loop()
 {
   if (clock.expired())
@@ -10,11 +12,12 @@ void loop()
         tetris.updateInput(
           ps2x.Button(PSB_PAD_LEFT),     // left
           ps2x.Button(PSB_PAD_RIGHT),    // right
-          ps2x.Button(PSB_SQUARE),       // rotate left
-          ps2x.Button(PSB_TRIANGLE),     // rotate right
+          ps2x.Button(PSB_SQUARE) || ps2x.Button(PSB_CROSS),       // rotate left
+          ps2x.Button(PSB_TRIANGLE) || ps2x.Button(PSB_CIRCLE),     // rotate right
           ps2x.Button(PSB_PAD_DOWN),     // slide down
           ps2x.Button(PSB_PAD_UP),       // drop down
-          ps2x.Button(PSB_START)         // start, pause
+          ps2x.Button(PSB_START),         // start, pause
+          ps2x.Button(PSB_SELECT)
         );
         tetris.step(seed);
         tetris.render(leds);
@@ -35,17 +38,28 @@ void loop()
       mode %= modeNumberOfModes;
     }
     
-    if(ps2x.Button(PSB_L1) && bright > 0)
+   if(ps2x.Button(PSB_L1))
+   {
+    if(!brightnessPressed)
     {
-      bright--;
-      LEDS.setBrightness(bright);
+      brightnessPressed = 1;
+      if(brightIndex > 1) brightIndex--;
+      LEDS.setBrightness(bright[brightIndex]);
     }
-
-    if(ps2x.Button(PSB_R1) && bright < 255)
+   }
+   else if(ps2x.Button(PSB_R1))
+   {
+    if(!brightnessPressed)
     {
-      bright++;
-      LEDS.setBrightness(bright);
+      brightnessPressed = 1;
+      if(brightIndex < 12) brightIndex++;
+      LEDS.setBrightness(bright[brightIndex]);
     }
+   }
+   else
+   {
+     brightnessPressed = 0;
+   }
 
     if(ps2x.Button(PSB_L2))
     {
