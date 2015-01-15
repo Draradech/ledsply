@@ -6,7 +6,7 @@ LED Display / Let's Play
 
 Arduino controller software for a LED display (from WS2811 LED Strip) with attached PS2 game controller.
 
-Multiple display modes: Rainbow, Tetris (planned)
+Multiple display modes: Rainbow, Tetris
 
 Libraries used:
 <br/>FastLED: https://github.com/FastLED/FastLED
